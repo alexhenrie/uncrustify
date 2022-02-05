@@ -1480,41 +1480,53 @@ indent_shift;
 extern Option<bool>
 indent_func_def_force_col1;
 
-// Whether to indent continued function call parameters one indent level,
-// rather than aligning parameters under the open parenthesis.
-extern Option<bool>
+// How to indent continued function call parameters.
+//  0: Align under the open parenthesis (default)
+//  1: Indent by one level
+// -1: Preserve original indentation
+extern BoundedOption<signed, -1, 1>
 indent_func_call_param;
 
-// Whether to indent continued function definition parameters one indent level,
-// rather than aligning parameters under the open parenthesis.
-extern Option<bool>
+// How to indent continued function definition parameters.
+//  0: Align under the open parenthesis (default)
+//  1: Indent by one level
+// -1: Preserve original indentation
+extern BoundedOption<signed, -1, 1>
 indent_func_def_param;
 
-// for function definitions, only if indent_func_def_param is false
+// for function definitions, only if indent_func_def_param is 0
 // Allows to align params when appropriate and indent them when not
-// behave as if it was true if paren position is more than this value
+// behave as if it was 1 if paren position is more than this value
 // if paren position is more than the option value
 extern BoundedOption<unsigned, 0, 160>
 indent_func_def_param_paren_pos_threshold;
 
-// Whether to indent continued function call prototype one indent level,
-// rather than aligning parameters under the open parenthesis.
-extern Option<bool>
+// How to indent continued function call prototype.
+//  0: Align under the open parenthesis (default)
+//  1: Indent by one level
+// -1: Preserve original indentation
+extern BoundedOption<signed, -1, 1>
 indent_func_proto_param;
 
-// Whether to indent continued function call declaration one indent level,
-// rather than aligning parameters under the open parenthesis.
-extern Option<bool>
+// How to indent continued function call declaration.
+//  0: Align under the open parenthesis (default)
+//  1: Indent by one level
+// -1: Preserve original indentation
+extern BoundedOption<signed, -1, 1>
 indent_func_class_param;
 
-// Whether to indent continued class variable constructors one indent level,
-// rather than aligning parameters under the open parenthesis.
-extern Option<bool>
+// How to indent continued class variable constructors.
+//  0: Align under the open parenthesis (default)
+//  1: Indent by one level
+// -1: Preserve original indentation
+extern BoundedOption<signed, -1, 1>
 indent_func_ctor_var_param;
 
-// Whether to indent continued template parameter list one indent level,
-// rather than aligning parameters under the open parenthesis.
-extern Option<bool>
+// How to indent continued template parameter list.
+//  0: Align under the open parenthesis (default)
+//  1: Indent by one level
+// -1: Preserve original indentation
+extern BoundedOption<signed, -1, 1>
 indent_template_param;
 
 // Double the indent for indent_func_xxx_param options.
@@ -4038,11 +4050,6 @@ include_category_2;
 
 ///////////////////////////////////////////////////////////////////////////////
 //BEGIN Use or Do not Use options
-
-// true:  indent_func_call_param will be used (default)
-// false: indent_func_call_param will NOT be used
-extern Option<bool>
-use_indent_func_call_param; // = true
 
 // The value of the indentation for a continuation line is calculated
 // differently if the statement is:

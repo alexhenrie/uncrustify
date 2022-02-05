@@ -1085,3 +1085,10 @@
 60075  cpp/Issue_3294.cfg                                   cpp/Issue_3294.cpp
 60076  cpp/indent_ignore_before_class_colon-t.cfg           cpp/indent_ctor_init.cpp
 60077  cpp/indent_ignore_before_constr_colon-t.cfg          cpp/indent_ctor_init.cpp
+60079  cpp/indent_template_param--1.cfg                     cpp/function_and_template_args.cpp
+
+60080  cpp/indent_func_call_param--1.cfg                    cpp/function_and_template_args.cpp
+60081  cpp/indent_func_class_param--1.cfg                   cpp/function_and_template_args.cpp
+60082  cpp/indent_func_ctor_var_param--1.cfg                cpp/function_and_template_args.cpp
+60083  cpp/indent_func_def_param--1.cfg                     cpp/function_and_template_args.cpp
+60084  cpp/indent_func_proto_param--1.cfg                   cpp/function_and_template_args.cpp

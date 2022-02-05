@@ -377,6 +377,22 @@ bool process_option_line_compat_0_73(const std::string &cmd,
    return(false);
 } // process_option_line_compat_0_73
 
+
+bool process_option_line_compat_0_74(const std::string &cmd,
+                                     const char        *filename)
+{
+   if (cmd == "use_indent_func_call_param")        // Issue #XXXX
+   {
+      OptionWarning w{ filename, OptionWarning::MINOR };
+      w("option '%s' is deprecated; did you want to use '%s' instead?",
+        cmd.c_str(), options::indent_func_call_param.name());
+
+      //UNUSED(options::indent_func_call_param.read(args[1].c_str()));
+      return(true);
+   }
+   return(false);
+} // process_option_line_compat_0_74
+
 } // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1062,6 +1078,14 @@ void process_option_line(const std::string &config_line, const char *filename,
       if (compat_level < option_level(0, 74))
       {
          if (process_option_line_compat_0_73(cmd, filename))
+         {
+            return;
+         }
+      }
+
+      if (compat_level < option_level(0, 75))
+      {
+         if (process_option_line_compat_0_74(cmd, filename))
          {
             return;
          }

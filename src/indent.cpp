@@ -2605,8 +2605,7 @@ void indent_text(void)
                        && (  get_chunk_parent_type(pc) == CT_FUNC_CALL
                           || get_chunk_parent_type(pc) == CT_FUNC_CALL_USER))
                     || (  options::indent_func_proto_param()
-                       && (  get_chunk_parent_type(pc) == CT_FUNC_PROTO
-                          || get_chunk_parent_type(pc) == CT_FUNC_CLASS_PROTO))
+                       && get_chunk_parent_type(pc) == CT_FUNC_PROTO)
                     || (  options::indent_func_class_param()
                        && (  get_chunk_parent_type(pc) == CT_FUNC_CLASS_DEF
                           || get_chunk_parent_type(pc) == CT_FUNC_CLASS_PROTO))
@@ -2621,68 +2620,121 @@ void indent_text(void)
                        && options::indent_func_def_param_paren_pos_threshold() > 0
                        && pc->orig_col > options::indent_func_def_param_paren_pos_threshold())))
          {
-            log_rule_B("indent_func_call_param");
-            log_rule_B("indent_func_proto_param");
-            log_rule_B("indent_func_class_param");
-            log_rule_B("indent_template_param");
-            log_rule_B("indent_func_ctor_var_param");
-            log_rule_B("indent_func_def_param");
-            log_rule_B("indent_func_def_param_paren_pos_threshold");
-            // Skip any continuation indents
-            size_t idx = (!frm.empty()) ? frm.size() - 2 : 0;
+            bool indent;
+            bool indent_ignore;
 
-            while (  (  (  idx > 0
-                        && frm.at(idx).type != CT_BRACE_OPEN
-                        && frm.at(idx).type != CT_VBRACE_OPEN
-                        && frm.at(idx).type != CT_PAREN_OPEN
-                        && frm.at(idx).type != CT_FPAREN_OPEN
-                        && frm.at(idx).type != CT_SPAREN_OPEN
-                        && frm.at(idx).type != CT_SQUARE_OPEN
-                        && frm.at(idx).type != CT_ANGLE_OPEN
-                        && frm.at(idx).type != CT_CASE
-                        && frm.at(idx).type != CT_MEMBER
-                        && frm.at(idx).type != CT_QUESTION
-                        && frm.at(idx).type != CT_COND_COLON
-                        && frm.at(idx).type != CT_LAMBDA
-                        && frm.at(idx).type != CT_ASSIGN_NL)
-                     || are_chunks_in_same_line(frm.at(idx).pc, frm.top().pc))
-                  && (  frm.at(idx).type != CT_CLASS_COLON
-                     && frm.at(idx).type != CT_CONSTR_COLON
-                     && !(  frm.at(idx).type == CT_LAMBDA
-                         && frm.at(idx).pc->get_prev_nc()->type == CT_NEWLINE)))
+            switch (get_chunk_parent_type(pc))
             {
-               if (idx == 0)
+            case CT_FUNC_CALL:
+            case CT_FUNC_CALL_USER:
+               log_rule_B("indent_func_call_param");
+               indent        = options::indent_func_call_param() == 1;
+               indent_ignore = options::indent_func_call_param() == -1;
+               break;
+
+            case CT_FUNC_PROTO:
+               log_rule_B("indent_func_proto_param");
+               indent        = options::indent_func_proto_param() == 1;
+               indent_ignore = options::indent_func_proto_param() == -1;
+               break;
+
+            case CT_FUNC_CLASS_DEF:
+            case CT_FUNC_CLASS_PROTO:
+               log_rule_B("indent_func_class_param");
+               indent        = options::indent_func_class_param() == 1;
+               indent_ignore = options::indent_func_class_param() == -1;
+               break;
+
+            case CT_TEMPLATE:
+               log_rule_B("indent_template_param");
+               indent        = options::indent_template_param() == 1;
+               indent_ignore = options::indent_template_param() == -1;
+               break;
+
+            case CT_FUNC_CTOR_VAR:
+               log_rule_B("indent_func_ctor_var_param");
+               indent        = options::indent_func_ctor_var_param() == 1;
+               indent_ignore = options::indent_func_ctor_var_param() == -1;
+               break;
+
+            case CT_FUNC_DEF:
+               log_rule_B("indent_func_def_param");
+               log_rule_B("indent_func_def_param_paren_pos_threshold");
+               indent = (  options::indent_func_def_param() == 1
+                        || (  options::indent_func_def_param() == 0 // Issue #931
+                           && options::indent_func_def_param_paren_pos_threshold() > 0
+                           && pc->orig_col > options::indent_func_def_param_paren_pos_threshold()));
+               indent_ignore = options::indent_func_def_param() == -1;
+               break;
+
+            default:
+               indent        = false;
+               indent_ignore = false;
+            } // switch
+
+            if (indent_ignore)
+            {
+               frm.top().indent = pc->orig_col;
+               log_indent();
+            }
+            else if (indent)
+            {
+               // Skip any continuation indents
+               size_t idx = (!frm.empty()) ? frm.size() - 2 : 0;
+
+               while (  (  (  idx > 0
+                           && frm.at(idx).type != CT_BRACE_OPEN
+                           && frm.at(idx).type != CT_VBRACE_OPEN
+                           && frm.at(idx).type != CT_PAREN_OPEN
+                           && frm.at(idx).type != CT_FPAREN_OPEN
+                           && frm.at(idx).type != CT_SPAREN_OPEN
+                           && frm.at(idx).type != CT_SQUARE_OPEN
+                           && frm.at(idx).type != CT_ANGLE_OPEN
+                           && frm.at(idx).type != CT_CASE
+                           && frm.at(idx).type != CT_MEMBER
+                           && frm.at(idx).type != CT_QUESTION
+                           && frm.at(idx).type != CT_COND_COLON
+                           && frm.at(idx).type != CT_LAMBDA
+                           && frm.at(idx).type != CT_ASSIGN_NL)
+                        || are_chunks_in_same_line(frm.at(idx).pc, frm.top().pc))
+                     && (  frm.at(idx).type != CT_CLASS_COLON
+                        && frm.at(idx).type != CT_CONSTR_COLON
+                        && !(  frm.at(idx).type == CT_LAMBDA
+                            && frm.at(idx).pc->get_prev_nc()->type == CT_NEWLINE)))
                {
-                  fprintf(stderr, "%s(%d): idx is ZERO, cannot be decremented, at line %zu, column %zu\n",
-                          __func__, __LINE__, pc->orig_line, pc->orig_col);
-                  log_flush(true);
-                  exit(EX_SOFTWARE);
+                  if (idx == 0)
+                  {
+                     fprintf(stderr, "%s(%d): idx is ZERO, cannot be decremented, at line %zu, column %zu\n",
+                             __func__, __LINE__, pc->orig_line, pc->orig_col);
+                     log_flush(true);
+                     exit(EX_SOFTWARE);
+                  }
+                  idx--;
+                  skipped = true;
                }
-               idx--;
-               skipped = true;
-            }
-            // PR#381
-            log_rule_B("indent_param");
+               // PR#381
+               log_rule_B("indent_param");
 
-            if (options::indent_param() != 0)
-            {
-               frm.top().indent = frm.at(idx).indent + options::indent_param();
-               log_indent();
-            }
-            else
-            {
-               frm.top().indent = frm.at(idx).indent + indent_size;
-               log_indent();
-            }
-            log_rule_B("indent_func_param_double");
+               if (options::indent_param() != 0)
+               {
+                  frm.top().indent = frm.at(idx).indent + options::indent_param();
+                  log_indent();
+               }
+               else
+               {
+                  frm.top().indent = frm.at(idx).indent + indent_size;
+                  log_indent();
+               }
+               log_rule_B("indent_func_param_double");
 
-            if (options::indent_func_param_double())
-            {
-               // double is: Use both values of the options indent_columns and indent_param
-               frm.top().indent += indent_size;
-               log_indent();
+               if (options::indent_func_param_double())
+               {
+                  // double is: Use both values of the options indent_columns and indent_param
+                  frm.top().indent += indent_size;
+                  log_indent();
+               }
+               frm.top().indent_tab = frm.top().indent;
             }
-            frm.top().indent_tab = frm.top().indent;
          }
          else if (  options::indent_oc_inside_msg_sel()
                  && chunk_is_token(pc, CT_PAREN_OPEN)
@@ -4006,16 +4058,16 @@ void indent_text(void)
                {
                   LOG_FMT(LINDPC, "FUNC_CALL OK [%d]\n", __LINE__);
 
-                  log_rule_B("use_indent_func_call_param");
+                  log_rule_B("indent_func_call_param");
 
-                  if (options::use_indent_func_call_param())
-                  {
-                     LOG_FMT(LINDPC, "use is true [%d]\n", __LINE__);
-                  }
-                  else
+                  if (options::indent_func_call_param() == -1)
                   {
                      LOG_FMT(LINDPC, "use is false [%d]\n", __LINE__);
                      use_indent = false;
+                  }
+                  else
+                  {
+                     LOG_FMT(LINDPC, "use is true [%d]\n", __LINE__);
                   }
                }
             }
